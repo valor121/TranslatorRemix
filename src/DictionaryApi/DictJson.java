@@ -20,6 +20,7 @@ public class DictJson extends DictionaryApi {
         String line;
         while ((line = reader.readLine()) != null) {
             response.append(line);
+
         }
         reader.close();
 

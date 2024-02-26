@@ -4,9 +4,11 @@ import ApiKey.ApiKeyBuilder;
 
 import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Properties;
 
 public class DeepLApiBuilder extends ApiKeyBuilder {
     public static String text;
@@ -49,12 +51,15 @@ public class DeepLApiBuilder extends ApiKeyBuilder {
         try {
             FileReader fileReader = new FileReader(file);
             BufferedReader bufferedReader = new BufferedReader(fileReader);
-            apiKey = bufferedReader.readLine();
+            String apiKey = bufferedReader.readLine(); // Read API key from the specified file
 
-            FileWriter fileWriter = new FileWriter("apikey.properties");
-            fileWriter.write(apiKey);
+            // Write API key to "apikey.properties" without overwriting previous content
+            Properties properties = new Properties();
+            properties.setProperty("apiKey", apiKey);
+            FileWriter fileWriter = new FileWriter("apikey.properties", true); // Append mode
+            properties.store(fileWriter, "API Key");
+
             fileWriter.close();
-
             bufferedReader.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -80,15 +85,24 @@ public class DeepLApiBuilder extends ApiKeyBuilder {
 
     @Override
     public InputStream Connection() throws Exception {
-        String baseUrl = "https://api-free.deepl.com/v2/translate?auth_key=" + apiKey + "&text=" + URLEncoder.encode(text, StandardCharsets.UTF_8) + "&target_lang=" + targetLang;
-        URL url = new URL(baseUrl);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        if (apiKey == null) {
+            throw new IllegalStateException("API key is not set");
+        }
 
+        String baseUrl = "https://api-free.deepl.com/v2/translate";
+        String urlParams = "auth_key=" + apiKey + "&text=" + URLEncoder.encode(text, StandardCharsets.UTF_8) + "&target_lang=" + targetLang;
+
+        URI uri = new URI(baseUrl +"?"+ urlParams);
+        URL url = uri.toURL();
+
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        System.out.println(apiKey);
         int responseCode = conn.getResponseCode();
         if (responseCode == HttpURLConnection.HTTP_OK) {
             return conn.getInputStream();
         } else {
             throw new Exception("Error: " + responseCode);
+
         }
     }
 }

@@ -2,7 +2,7 @@ import sys
 from transformers import M2M100ForConditionalGeneration, M2M100Tokenizer
 
 
-def translate_text(source_text, source_language, target_language):
+def translate_text(source_text, target_language):
     model = M2M100ForConditionalGeneration.from_pretrained("alirezamsh/small100")
     tokenizer = M2M100Tokenizer.from_pretrained("alirezamsh/small100", tgt_lang=target_language)
 
@@ -22,5 +22,5 @@ if __name__ == "__main__":
     source_language = sys.argv[2]
     target_language = sys.argv[3]
 
-    translated_text = translate_text(source_text, source_language, target_language)
+    translated_text = translate_text(source_text, target_language)
     print(translated_text)

@@ -23,7 +23,6 @@ import static DeepLApi.DeepLApiBuilder.*;
 public class LearnLanguage extends JFrame {
     private String translationMethod;
     public String language;
-    private String translatedText = text;
 
     public JTextArea textArea;
     private String targetLanguageCode;
@@ -192,13 +191,30 @@ public class LearnLanguage extends JFrame {
         }
     }
 
-    public void Translate_DeepL() throws Exception {
+    public void Translate_DeepL() {
         String selectedText = textArea.getSelectedText();
         if (selectedText != null) {
-            DeepLApiBuilder.setText(selectedText);
-            Translator translator = new Translator("https://api-free.deepl.com/v2/translate?", apiKey, text);
-            translatedText = Translator.ParseText(translator.Connection()); // Store translated text
-            textArea.replaceSelection(translatedText);
+            try {
+
+
+                // Ensure the API key is set before proceeding
+                if (apiKey == null || apiKey.isEmpty()) {
+                    JOptionPane.showMessageDialog(null, "API key not set.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                // Set the text and target language for translation
+                DeepLApiBuilder.setText(selectedText);
+                Translator translator = new Translator("https://api-free.deepl.com/v2/translate?", apiKey, text);
+                String translatedText = Translator.ParseText(translator.Connection()); // Store translated text
+
+                // Replace the selected text with the translated text in the text area
+                textArea.replaceSelection(translatedText);
+            } catch (Exception e) {
+                e.printStackTrace();
+                // Handle the exception, e.g., show an error message
+                JOptionPane.showMessageDialog(null, "Error occurred during translation: " + e.getMessage(), "Translation Error", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 
@@ -206,8 +222,8 @@ public class LearnLanguage extends JFrame {
         String selectedText = textArea.getSelectedText();
         if (selectedText != null) {
             // Use the translated text stored in the instance variable
-            DictionaryApi.setText(translatedText);
-            DictJson dictJson = new DictJson("", translatedText, "en", "https://api.dictionaryapi.dev/api/v2/entries/en_US/");
+            DictionaryApi.setText(selectedText);
+            DictJson dictJson = new DictJson("", selectedText, "en", "https://api.dictionaryapi.dev/api/v2/entries/en_US/");
             String definition = DictJson.ParseText(dictJson.Connection());
             JOptionPane.showMessageDialog(null, definition, "Definition", JOptionPane.INFORMATION_MESSAGE);
 
@@ -228,18 +244,20 @@ public class LearnLanguage extends JFrame {
                 String apiKeyFilePath = selectedFile.getAbsolutePath();
 
                 if (option == 0) { // Set API Key
-                    String apiKeyFile = JOptionPane.showInputDialog("Enter the API key file name");
-                    DeepLApiBuilder.setText(apiKeyFile);
-
+                    apiKey = JOptionPane.showInputDialog("Enter the API key");
                 } else { // Get API Key
-                    DeepLApiBuilder deepLApiBuilder = new DeepLApiBuilder("", "", "", "");
-                    deepLApiBuilder.SetApiKey(apiKeyFilePath);
+                    try (BufferedReader reader = new BufferedReader(new FileReader(apiKeyFilePath))) {
+                        apiKey = reader.readLine();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        JOptionPane.showMessageDialog(null, "Error reading API key from file: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+
+                    }
                 }
-            } else {
-                JOptionPane.showMessageDialog(null, "No file selected.", "File Selection", JOptionPane.WARNING_MESSAGE);
             }
         }
     }
+
 
 
     public static void main(String[] args) {
