@@ -16,6 +16,10 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 import static DeepLApi.DeepLApiBuilder.*;
 
@@ -43,9 +47,78 @@ public class LearnLanguage extends JFrame {
 
         Translate_Button();
         LookUp_Button();
+        addSqlMenu(); // Add Sql menu
+
 
         setVisible(true);
+
+
     }
+    private void addSqlMenu() {
+
+        JMenuBar menuBar = getJMenuBar(); // Get the existing menu bar
+        JMenu sqlMenu = new JMenu("Sql");
+        JMenuItem saveTextMenuItem = new JMenuItem("Save Text");
+        JMenuItem ViewDB = new JMenuItem("ViewDB");
+        SQlite sqlite = new SQlite("jdbc:sqlite:DeepL.db"); // Pass the database URL if needed
+
+
+        saveTextMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String selectedText = textArea.getSelectedText();
+                if (selectedText != null && !selectedText.isEmpty()) {
+                    saveSelectedText(selectedText);
+                } else {
+                    JOptionPane.showMessageDialog(null, "No text selected.", "Warning", JOptionPane.WARNING_MESSAGE);
+                }
+            }
+
+
+        });
+        // Add ActionListener to handle viewing database tables
+        ViewDB.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                sqlite.viewTables();
+            }
+        });
+        sqlMenu.add(ViewDB);
+        sqlMenu.add(saveTextMenuItem);
+        menuBar.add(sqlMenu); // Add Sql menu next to the existing menus
+    }
+
+    private void saveSelectedText(String selectedText) {
+        SQlite sqlite = new SQlite("jdbc:sqlite:DeepL.db");
+        sqlite.saveSelectedText(selectedText);
+    }
+
+    private void saveSelectedTextToDatabase() {
+        String selectedText = textArea.getSelectedText();
+        if (selectedText != null && !selectedText.isEmpty()) {
+            // Establish connection to your SQL database
+            try (Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/your_database_name", "username", "password")) {
+                String sql = "INSERT INTO saved_text (text) VALUES (?)";
+                try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                    statement.setString(1, selectedText);
+                    int rowsInserted = statement.executeUpdate();
+                    if (rowsInserted > 0) {
+                        JOptionPane.showMessageDialog(null, "Selected text saved successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Failed to save selected text.", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(null, "Error saving text to database: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                ex.printStackTrace();
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "No text selected to save.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
 
     private void LanguageMenu() { //this is where the user can select a language to translate to
         JMenuBar menuBar = new JMenuBar();
@@ -116,6 +189,8 @@ public class LearnLanguage extends JFrame {
         add(topPanel, BorderLayout.NORTH);
         add(new JScrollPane(textArea), BorderLayout.CENTER);
     }
+
+
 
     public void Translate_Button() {
         JButton translateButton = new JButton("Translate");
@@ -257,6 +332,7 @@ public class LearnLanguage extends JFrame {
             }
         }
     }
+
 
 
 
