@@ -2,7 +2,7 @@
 <module type="JAVA_MODULE" version="4">
   <component name="FacetManager">
     <facet type="Python" name="Python">
-      <configuration sdkName="" />
+      <configuration sdkName="Python 3.11 (Api)" />
     </facet>
   </component>
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_19" inherit-compiler-output="true">
@@ -52,5 +52,6 @@
       </library>
     </orderEntry>
     <orderEntry type="library" name="mockito.kotlin" level="project" />
+    <orderEntry type="library" name="Python 3.11 (Api) interpreter library" level="application" />
   </component>
 </module>

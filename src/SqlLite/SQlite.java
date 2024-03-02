@@ -22,7 +22,7 @@ public class SQlite extends Component {
     }
 
     private void createTable() {
-        String createTableSql = "CREATE TABLE IF NOT EXISTS DeepL (id INTEGER PRIMARY KEY, Translations VARCHAR(255), Glossaries VARCHAR(255), ApiKey VARCHAR(255));";
+        String createTableSql = "CREATE TABLE IF NOT EXISTS DeepL (id INTEGER PRIMARY KEY, Translations VARCHAR(255), Glossaries VARCHAR(255));";
         try {
             Statement stmt = conn.createStatement();
             stmt.execute(createTableSql);
@@ -31,18 +31,8 @@ public class SQlite extends Component {
         }
     }
 
-    public String SetApiKey(String apiKey) {
-        //set api key only once
-        String insertSql = "INSERT INTO DeepL (ApiKey) VALUES (?)";
-        try (PreparedStatement pstmt = conn.prepareStatement(insertSql)) {
-            pstmt.setString(1, apiKey);
-            pstmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return insertSql;
-    }
 
+     //Delete a column within a table, will fix this to collaborate properly with the GUI and current, IDS.
     public String deleteKeyMenu() {
         //shows the keys listed and allows the user to select which key to delete
         String deleteSql = "DELETE FROM DeepL WHERE ApiKey = ?";

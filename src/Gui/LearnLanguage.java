@@ -22,7 +22,9 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import static DeepLApi.DeepLApiBuilder.*;
-
+//Todo: rebuild the Translate.py script, to make it work with the language menu.
+//It's hard coded for German to english, as of now.
+//refactoring code,make it cleaner ect ect.
 
 public class LearnLanguage extends JFrame {
     private String translationMethod;
@@ -226,46 +228,51 @@ public class LearnLanguage extends JFrame {
 
 
 
-    public void Translate_Ai() throws IOException {
+    public void Translate_Ai() {
         String selectedText = textArea.getSelectedText();
         if (selectedText != null) {
             try {
-                // Python script path
-                String pythonScript = "Translate.py";
+                // Get the path to the bundled Python executable
+                String pythonExecutable = "dist/Translate.exe";
 
-                // Run the Python script using ProcessBuilder
-                String[] cmd = { "python", pythonScript, selectedText,"fr" ,targetLanguageCode };
-                ProcessBuilder processBuilder = new ProcessBuilder(cmd);
-                processBuilder.redirectErrorStream(true);
+                // Run the bundled Python executable with the appropriate arguments
+                ProcessBuilder processBuilder = new ProcessBuilder(pythonExecutable, selectedText, "en", "DE"); //will rebuild the script, in order to make it work with the language menu
 
+                processBuilder.redirectErrorStream(true); // Redirect error stream to capture errors
+
+                // Start the Python process
                 Process process = processBuilder.start();
 
-                // Read the output from the Python script
-                InputStream inputStream = process.getInputStream();
-                InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8); // Specify the encoding as 'UTF-8'
-                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-
-                String line;
+                // Capture output from Python script
+                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                 StringBuilder outputText = new StringBuilder();
-                while ((line = bufferedReader.readLine()) != null) {
-                    outputText.append(line);
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    outputText.append(line).append("\n");
                 }
 
                 // Wait for the Python script to finish
-                process.waitFor();
+                int exitCode = process.waitFor();
 
-                // Get the translated text from the Python script's output
-                String translatedText = outputText.toString();
+                if (exitCode == 0) {
+                    // Get the translated text from the Python script's output
+                    String translatedText = outputText.toString().trim();
 
-                // Update the text area in your GUI with the translated text
-                textArea.setText(translatedText);
-            } catch (Exception e) {
+                    // Update the text area in your GUI with the translated text
+                    textArea.setText(translatedText);
+                } else {
+                    // Handle error if Python script exits with non-zero status
+                    JOptionPane.showMessageDialog(null, "Error executing Python script. Please check your script and try again.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (IOException | InterruptedException e) {
                 // Handle exceptions
                 e.printStackTrace();
+                JOptionPane.showMessageDialog(null, "Error executing Python script: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
+        } else {
+            JOptionPane.showMessageDialog(null, "No text selected.", "Warning", JOptionPane.WARNING_MESSAGE);
         }
     }
-
     public void Translate_DeepL() {
         String selectedText = textArea.getSelectedText();
         if (selectedText != null) {

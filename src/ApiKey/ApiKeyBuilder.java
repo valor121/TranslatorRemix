@@ -39,21 +39,7 @@ public abstract class ApiKeyBuilder {
         }
     }
 
-    public InputStream executeApi(String endpoint) throws Exception { // Execute the API call with the given endpoint and return the InputStream of the response body as a result of the call to the API
-        //End point is the part of the url that comes after the base url, text= and target_lang= are examples of endpoints. The endpoint is the part of the url that is specific to the API call.
-        String urlParams = constructUrlParams(endpoint) + constructAdditionalParams();
-        String fullUrl = baseUrl + "?" + urlParams + "&auth_key=" + apiKey;
-        return Connection(fullUrl);
-    }
 
-    protected String constructUrlParams(String endpoint) { // Provide a default implementation for url parameters
-        return endpoint;
-    }
-
-    protected String constructAdditionalParams() { // Provide a default implementation for additional parameters
-        // Provide a default implementation for additional parameters
-        return "";
-    }
 
     public abstract InputStream Connection() throws Exception;
 }
